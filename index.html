@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 适配手机端，扫码打开也能正常显示 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阻聚剂含量计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+        .input-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 16px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+        input:focus {
+            border-color: #07c160;
+        }
+        /* 按钮容器，让两个按钮并排/上下排列更美观 */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn-calculate {
+            flex: 1;
+            padding: 15px;
+            background-color: #07c160;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .btn-calculate:hover {
+            background-color: #06b058;
+        }
+        /* 清空按钮样式，区分但统一风格 */
+        .btn-reset {
+            flex: 1;
+            padding: 15px;
+            background-color: #666;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .btn-reset:hover {
+            background-color: #555;
+        }
+        .result-box {
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .result-title {
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .result-value {
+            color: #07c160;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .error-tip {
+            color: #ff4444;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>阻聚剂含量计算器</h1>
+        
+        <!-- 样品质量输入 -->
+        <div class="input-group">
+            <label for="gValue">样品质量（G）</label>
+            <input type="number" id="gValue" placeholder="请输入大于0的数值" step="0.001">
+        </div>
+
+        <!-- 吸光度输入 -->
+        <div class="input-group">
+            <label for="aValue">吸光度（A）</label>
+            <input type="number" id="aValue" placeholder="请输入数值" step="0.0001">
+        </div>
+
+        <!-- 按钮组：计算 + 清空 -->
+        <div class="btn-group">
+            <button class="btn-calculate" onclick="calculateB()">计算阻聚剂含量（B）</button>
+            <button class="btn-reset" onclick="clearData()">清空数据</button>
+        </div>
+
+        <!-- 错误提示 -->
+        <div class="error-tip" id="errorTip">样品质量不能为0，请重新输入！</div>
+
+        <!-- 结果展示 -->
+        <div class="result-box">
+            <div class="result-title">阻聚剂含量（B）</div>
+            <div class="result-value" id="resultValue">--</div>
+        </div>
+    </div>
+
+    <script>
+        // 核心计算函数
+        function calculateB() {
+            // 获取输入值
+            const G = parseFloat(document.getElementById('gValue').value);
+            const A = parseFloat(document.getElementById('aValue').value);
+            const errorTip = document.getElementById('errorTip');
+            const resultValue = document.getElementById('resultValue');
+
+            // 重置提示和结果
+            errorTip.style.display = 'none';
+            resultValue.textContent = '--';
+
+            // 验证：样品质量不能为0或非数字
+            if (isNaN(G) || G <= 0) {
+                errorTip.textContent = '样品质量不能为0或非数字，请重新输入！';
+                errorTip.style.display = 'block';
+                return;
+            }
+            // 验证：吸光度不能为空或非数字
+            if (isNaN(A)) {
+                errorTip.textContent = '吸光度不能为空或非数字，请输入数值！';
+                errorTip.style.display = 'block';
+                return;
+            }
+
+            // 核心计算公式
+            const A3 = Math.pow(A, 3); // A的立方
+            const A2 = Math.pow(A, 2); // A的平方
+            const B = (741.52 * A3 - 1199.2 * A2 + 1886.8 * A - 149.92) / G;
+
+            // 保留4位小数，展示结果（修正原注释与代码不符的问题）
+            resultValue.textContent = B.toFixed(2);
+        }
+
+        // 新增：清空数据函数
+        function clearData() {
+            // 获取所有需要重置的元素
+            const gInput = document.getElementById('gValue');
+            const aInput = document.getElementById('aValue');
+            const errorTip = document.getElementById('errorTip');
+            const resultValue = document.getElementById('resultValue');
+
+            // 清空输入框
+            gInput.value = '';
+            aInput.value = '';
+            // 隐藏错误提示
+            errorTip.style.display = 'none';
+            // 重置结果为初始状态
+            resultValue.textContent = '--';
+            // 让输入框获得焦点（提升用户体验）
+            gInput.focus();
+        }
+    </script>
+</body>
+</html>
